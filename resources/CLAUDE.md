@@ -41,13 +41,13 @@ castor qa:twig-cs         # Twig template linting
 
 ```bash
 # Run all tests
-docker compose exec app bin/phpunit
+castor builder bin/phpunit
 
 # Run a single test file
-docker compose exec app bin/phpunit tests/Controller/YourTest.php
+castor builder bin/phpunit tests/Controller/YourTest.php
 
 # Run by filter
-docker compose exec app bin/phpunit --filter TestMethodName
+castor builder bin/phpunit --filter TestMethodName
 ```
 
 PHPUnit config: `application/phpunit.dist.xml`. Tests live in `application/tests/`.
@@ -55,7 +55,7 @@ PHPUnit config: `application/phpunit.dist.xml`. Tests live in `application/tests
 ### Symfony Console
 
 ```bash
-docker compose exec app bin/console [command]
+castor builder bin/console [command]
 ```
 
 ## Architecture
