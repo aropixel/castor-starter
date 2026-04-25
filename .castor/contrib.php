@@ -130,7 +130,7 @@ function copyClaudeResources(string $contribDir): void
         \Castor\run(sprintf(
             'cp -r %s %s',
             escapeshellarg($claudeDir),
-            escapeshellarg($contribDir . '/.claude')
+            escapeshellarg($contribDir)
         ));
     }
 }

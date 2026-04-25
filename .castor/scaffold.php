@@ -182,6 +182,32 @@ GITIGNORE;
     file_put_contents($gitignore, $content);
 }
 
+function addAdminBundleImportmap(string $projectDir): void
+{
+    $importmapFile = $projectDir . '/application/importmap.php';
+
+    if (!file_exists($importmapFile)) {
+        return;
+    }
+
+    $content = file_get_contents($importmapFile);
+
+    if (str_contains($content, '@aropixel/admin-bundle')) {
+        return;
+    }
+
+    $entry = <<<'PHP'
+    '@aropixel/admin-bundle' => [
+        'path' => './vendor/aropixel/admin-bundle/assets/admin.js',
+        'entrypoint' => true,
+    ],
+PHP;
+
+    $content = preg_replace('/(\n\];)/', "\n$entry$1", $content);
+
+    file_put_contents($importmapFile, $content);
+}
+
 function addMissingBundles(string $projectDir): void
 {
     $bundlesFile = $projectDir . '/application/config/bundles.php';

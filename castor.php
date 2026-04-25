@@ -81,6 +81,7 @@ function aropixel_contrib_admin(string $name): void
 
     io()->section('7. Installation de Symfony');
     run('castor symfony --web-app', context: \Castor\context()->withWorkingDirectory($contribDir));
+    run('castor builder composer remove symfony/ux-turbo', context: \Castor\context()->withWorkingDirectory($contribDir));
 
     io()->section('8. Démarrage des conteneurs');
     run('castor start', context: \Castor\context()->withWorkingDirectory($contribDir));
@@ -105,6 +106,7 @@ function aropixel_contrib_admin(string $name): void
         'castor builder php bin/console assets:install --relative',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
+    addAdminBundleImportmap($contribDir);
 
     io()->section('12. Création de la base de données');
     run(
@@ -269,6 +271,7 @@ function aropixel_new_admin(string $name): void
         'castor builder php bin/console assets:install --relative',
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
+    addAdminBundleImportmap($projectDir);
 
     io()->section('6. Création des dossiers');
     createProjectDirectories($projectDir);
