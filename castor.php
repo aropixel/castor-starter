@@ -193,9 +193,40 @@ function aropixel_contrib_all(string $name): void
     installContribBundle($name, 'page-bundle', 'aropixel/page-bundle');
     installContribBundle($name, 'menu-bundle', 'aropixel/menu-bundle');
 
+    $contribDir = getcwd() . '/' . $name;
+
+    io()->section('Copie des fichiers sandbox (Project CRUD, fixtures, tests)');
+    copyContribAllFiles($contribDir);
+
+    io()->section('Installation des dépendances de test');
+    requireTestDependencies($contribDir);
+    configureAutoloadDevBundleTests($contribDir);
+
+    io()->section('Migration pour l\'entité Project');
+    run(
+        'castor builder php bin/console doctrine:migration:diff -n',
+        context: \Castor\context()->withWorkingDirectory($contribDir)
+    );
+    run(
+        'castor builder php bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing',
+        context: \Castor\context()->withWorkingDirectory($contribDir)
+    );
+
+    io()->section('Chargement des fixtures');
+    run(
+        'castor builder php bin/console doctrine:fixtures:load -n',
+        context: \Castor\context()->withWorkingDirectory($contribDir)
+    );
+
+    io()->section('Configuration des suites de tests PHPUnit');
+    configurePhpUnitTestSuites($contribDir);
+
     io()->success([
         sprintf('L\'environnement de contribution complet "%s" est prêt.', $name),
         'Bundles installés : admin-bundle, blog-bundle, page-bundle, menu-bundle',
+        '',
+        'Comptes de test : admin@example.com / admin  —  superadmin@example.com / admin',
+        'Lancer les tests : castor builder bin/phpunit',
     ]);
 }
 

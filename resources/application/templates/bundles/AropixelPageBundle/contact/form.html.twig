@@ -1,0 +1,55 @@
+{% extends '@AropixelPage/base.html.twig' %}
+
+{% block header_title %}{% trans %}pages.title{% endtrans %}{% endblock %}
+{% block header_breadcrumb %}
+    <ul class="breadcrumb breadcrumb-caret position-right">
+        <li class="breadcrumb-item"><a href="{{ url('_admin') }}">{% trans %}text.dashboard{% endtrans %}</a></li>
+        <li class="breadcrumb-item"><a href="{{ url('aropixel_page_index', {'type': 'contact'}) }}">{% trans %}pages.title{% endtrans %}</a></li>
+        {% if page and page.id %}
+            <li class="breadcrumb-item active">{% trans %}text.edit{% endtrans %}</li>
+        {% else %}
+            <li class="breadcrumb-item active">{% trans %}text.create{% endtrans %}</li>
+        {% endif %}
+    </ul>
+{% endblock %}
+
+{% block tabbable %}
+    <li class="nav-item"><a href="#panel-tab1" data-bs-toggle="pill" class="nav-link active"><span>{% trans %}page.form.content{% endtrans %}</span></a></li>
+    <li class="nav-item"><a href="#panel-tab2" data-bs-toggle="pill" class="nav-link"><span>{% trans %}page.form.seo{% endtrans %}</span></a></li>
+{% endblock %}
+
+{% block mainPanel %}
+
+    <div class="tab-pane active" id="panel-tab1">
+
+        <div class="card card-centered-large">
+
+            <div class="card-body">
+
+                {{ form_row(form.title) }}
+                {{ form_row(form.phone) }}
+                {{ form_row(form.address) }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="tab-pane" id="panel-tab2">
+
+        <div class="card card-centered-large">
+
+            <div class="card-body">
+
+                {{ form_row(form.metaTitle) }}
+                {{ form_row(form.metaDescription) }}
+                {{ form_row(form.metaKeywords) }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock %}

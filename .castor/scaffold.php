@@ -61,6 +61,18 @@ function createProjectDirectories(string $projectDir): void
         $projectDir . '/application/public',
         $projectDir . '/application/public/media',
         $projectDir . '/application/src/Controller/Admin',
+        $projectDir . '/application/src/Entity',
+        $projectDir . '/application/src/Repository',
+        $projectDir . '/application/src/Form/Type',
+        $projectDir . '/application/src/Menu',
+        $projectDir . '/application/src/DataFixtures',
+        $projectDir . '/application/templates/admin/project',
+        $projectDir . '/application/templates/bundles/AropixelPageBundle/contact',
+        $projectDir . '/application/tests/Functional/Security',
+        $projectDir . '/application/tests/Functional/Blog',
+        $projectDir . '/application/tests/Functional/Page',
+        $projectDir . '/application/tests/Functional/Menu',
+        $projectDir . '/application/tests/Functional/Project',
     ];
 
     foreach ($dirs as $dir) {
@@ -221,6 +233,7 @@ function addMissingBundles(string $projectDir): void
     $missingBundles = [
         'Liip\ImagineBundle\LiipImagineBundle' => "['all' => true]",
         'Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle' => "['all' => true]",
+        'Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle' => "['dev' => true, 'test' => true]",
     ];
 
     foreach ($missingBundles as $bundleClass => $envs) {
@@ -332,4 +345,138 @@ function customizeDockerPhp(string $projectDir): void
     $content = preg_replace($pattern, $replacement, $content);
 
     file_put_contents($file, $content);
+}
+
+function copyContribAllFiles(string $contribDir): void
+{
+    $root = dirname(__DIR__);
+
+    $files = [
+        'application/config/packages/aropixel_menu.yaml',
+        'application/config/packages/dev/doctrine_fixtures.yaml',
+        'application/src/Entity/Project.php',
+        'application/src/Entity/ProjectImage.php',
+        'application/src/Repository/ProjectRepository.php',
+        'application/src/Form/ProjectType.php',
+        'application/src/Form/Type/ContactPageType.php',
+        'application/src/Menu/ProjectMenuSource.php',
+        'application/src/DataFixtures/ProjectFixture.php',
+        'application/src/Controller/Admin/ProjectController.php',
+        'application/templates/admin/project/index.html.twig',
+        'application/templates/admin/project/form.html.twig',
+        'application/templates/admin/project/_actions.html.twig',
+        'application/templates/bundles/AropixelPageBundle/contact/form.html.twig',
+        'application/tests/Functional/WebTestCase.php',
+        'application/tests/Functional/Security/LoginTest.php',
+        'application/tests/Functional/Security/AccessControlTest.php',
+        'application/tests/Functional/Blog/PostTest.php',
+        'application/tests/Functional/Blog/PostCategoryTest.php',
+        'application/tests/Functional/Page/PageTest.php',
+        'application/tests/Functional/Page/PageBuilderTest.php',
+        'application/tests/Functional/Menu/MenuTest.php',
+        'application/tests/Functional/Project/ProjectTest.php',
+    ];
+
+    foreach ($files as $file) {
+        $source = $root . '/resources/' . $file;
+        if (!file_exists($source)) {
+            throw new RuntimeException(sprintf('Fichier source manquant : %s', $source));
+        }
+
+        $target = $contribDir . '/' . $file;
+        $targetDir = dirname($target);
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        copy($source, $target);
+    }
+}
+
+function requireTestDependencies(string $contribDir): void
+{
+    \Castor\run(
+        'castor builder composer require --dev doctrine/doctrine-fixtures-bundle:^4.0 symfony/browser-kit:^7.0 symfony/css-selector:^7.0 dama/doctrine-test-bundle:^8.0',
+        context: \Castor\context()->withWorkingDirectory($contribDir)
+    );
+}
+
+function configureAutoloadDevBundleTests(string $contribDir): void
+{
+    $composerJson = $contribDir . '/application/composer.json';
+
+    if (!file_exists($composerJson)) {
+        throw new RuntimeException(sprintf('Fichier introuvable : %s', $composerJson));
+    }
+
+    $json = json_decode((string) file_get_contents($composerJson), true);
+
+    if (!\is_array($json)) {
+        throw new RuntimeException('Le fichier composer.json est invalide.');
+    }
+
+    $bundleNamespaces = [
+        'Aropixel\\AdminBundle\\Tests\\' => '../admin-bundle/tests/',
+        'Aropixel\\BlogBundle\\Tests\\' => '../blog-bundle/tests/',
+        'Aropixel\\PageBundle\\Tests\\' => '../page-bundle/tests/',
+        'Aropixel\\MenuBundle\\Tests\\' => '../menu-bundle/tests/',
+    ];
+
+    foreach ($bundleNamespaces as $ns => $path) {
+        $json['autoload-dev']['psr-4'][$ns] = $path;
+    }
+
+    file_put_contents(
+        $composerJson,
+        json_encode($json, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES) . "\n"
+    );
+
+    \Castor\run(
+        'castor builder composer dump-autoload',
+        context: \Castor\context()->withWorkingDirectory($contribDir)
+    );
+}
+
+function configurePhpUnitTestSuites(string $contribDir): void
+{
+    $phpunitFile = $contribDir . '/application/phpunit.dist.xml';
+
+    if (!file_exists($phpunitFile)) {
+        return;
+    }
+
+    $content = (string) file_get_contents($phpunitFile);
+
+    if (!str_contains($content, 'AdminBundle')) {
+        $bundleSuites = <<<XML
+
+        <testsuite name="AdminBundle">
+            <directory>../admin-bundle/tests/Unit</directory>
+            <directory>../admin-bundle/tests/Integration</directory>
+        </testsuite>
+        <testsuite name="BlogBundle">
+            <directory>../blog-bundle/tests/Unit</directory>
+            <directory>../blog-bundle/tests/Integration</directory>
+        </testsuite>
+        <testsuite name="PageBundle">
+            <directory>../page-bundle/tests/Unit</directory>
+            <directory>../page-bundle/tests/Integration</directory>
+        </testsuite>
+        <testsuite name="MenuBundle">
+            <directory>../menu-bundle/tests/Unit</directory>
+            <directory>../menu-bundle/tests/Integration</directory>
+        </testsuite>
+XML;
+        $content = str_replace('</testsuites>', $bundleSuites . "\n    </testsuites>", $content);
+    }
+
+    if (!str_contains($content, 'PHPUnitExtension')) {
+        $content = str_replace(
+            '<extensions>',
+            '<extensions>' . "\n        " . '<bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>',
+            $content
+        );
+    }
+
+    file_put_contents($phpunitFile, $content);
 }

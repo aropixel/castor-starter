@@ -1,0 +1,21 @@
+services:
+    Aropixel\AdminBundle\Tests\DataFixtures\:
+        resource: '../../../../admin-bundle/tests/DataFixtures/'
+        autowire: true
+        autoconfigure: true
+        tags: ['doctrine.fixture.orm']
+    Aropixel\BlogBundle\Tests\DataFixtures\:
+        resource: '../../../../blog-bundle/tests/DataFixtures/'
+        autowire: true
+        autoconfigure: true
+        tags: ['doctrine.fixture.orm']
+    Aropixel\PageBundle\Tests\DataFixtures\:
+        resource: '../../../../page-bundle/tests/DataFixtures/'
+        autowire: true
+        autoconfigure: true
+        tags: ['doctrine.fixture.orm']
+    Aropixel\MenuBundle\Tests\DataFixtures\:
+        resource: '../../../../menu-bundle/tests/DataFixtures/'
+        autowire: true
+        autoconfigure: true
+        tags: ['doctrine.fixture.orm']
