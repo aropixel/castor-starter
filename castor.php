@@ -298,7 +298,7 @@ function aropixel_new_admin(string $name): void
     io()->section('5. Installation du bundle admin Aropixel');
     addMissingBundles($projectDir);
     run(
-        'castor builder composer require aropixel/admin-bundle:dev-release/finalversion',
+        'castor builder composer require aropixel/admin-bundle:dev-main',
         context: \Castor\context()
             ->withWorkingDirectory($projectDir)
     );
