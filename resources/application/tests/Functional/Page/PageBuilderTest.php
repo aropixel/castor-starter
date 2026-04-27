@@ -96,7 +96,7 @@ class PageBuilderTest extends WebTestCase
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'id' => $id,
-            'title' => 'Nouveau titre services',
+            'title' => 'Services',
             'content' => ['sections' => []],
         ]));
 
