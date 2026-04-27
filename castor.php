@@ -222,6 +222,9 @@ function aropixel_contrib_all(string $name): void
     io()->section('Configuration des suites de tests PHPUnit');
     configurePhpUnitTestSuites($contribDir);
 
+    io()->section('Redémarrage des conteneurs');
+    run('castor up', context: \Castor\context()->withWorkingDirectory($contribDir));
+
     io()->success([
         sprintf('L\'environnement de contribution complet "%s" est prêt.', $name),
         'Bundles installés : admin-bundle, blog-bundle, page-bundle, menu-bundle',
