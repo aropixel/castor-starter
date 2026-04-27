@@ -233,7 +233,6 @@ function addMissingBundles(string $projectDir): void
     $missingBundles = [
         'Liip\ImagineBundle\LiipImagineBundle' => "['all' => true]",
         'Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle' => "['all' => true]",
-        'Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle' => "['dev' => true, 'test' => true]",
     ];
 
     foreach ($missingBundles as $bundleClass => $envs) {
@@ -390,6 +389,24 @@ function copyContribAllFiles(string $contribDir): void
         }
 
         copy($source, $target);
+    }
+}
+
+function addFixturesBundle(string $contribDir): void
+{
+    $bundlesFile = $contribDir . '/application/config/bundles.php';
+
+    if (!file_exists($bundlesFile)) {
+        throw new RuntimeException(sprintf('Le fichier "%s" est introuvable.', $bundlesFile));
+    }
+
+    $content = file_get_contents($bundlesFile);
+    $bundleClass = 'Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle';
+
+    if (strpos($content, $bundleClass . '::class') === false) {
+        $newLine = "    $bundleClass::class => ['dev' => true, 'test' => true],";
+        $content = preg_replace('/(\n\];)/', "\n$newLine$1", $content);
+        file_put_contents($bundlesFile, $content);
     }
 }
 

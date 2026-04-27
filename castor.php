@@ -199,8 +199,9 @@ function aropixel_contrib_all(string $name): void
     copyContribAllFiles($contribDir);
 
     io()->section('Installation des dépendances de test');
-    requireTestDependencies($contribDir);
     configureAutoloadDevBundleTests($contribDir);
+    requireTestDependencies($contribDir);
+    addFixturesBundle($contribDir);
 
     io()->section('Migration pour l\'entité Project');
     run(
