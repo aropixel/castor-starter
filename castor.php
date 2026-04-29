@@ -237,9 +237,9 @@ function aropixel_contrib_all(string $name): void
 #[AsTask(name: 'aropixel:new:admin', description: 'Crée un projet Symfony admin Aropixel')]
 function aropixel_new_admin(
     string $name,
-    bool $page = false,
-    bool $blog = false,
-    bool $menu = false,
+    bool $withPage = false,
+    bool $withBlog = false,
+    bool $withMenu = false,
     bool $all = false,
 ): void {
     $root = getcwd();
@@ -346,9 +346,9 @@ function aropixel_new_admin(
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
 
-    $installPage = $all || $page;
-    $installBlog = $all || $blog;
-    $installMenu = $all || $menu;
+    $installPage = $all || $withPage;
+    $installBlog = $all || $withBlog;
+    $installMenu = $all || $withMenu;
 
     if ($installPage) {
         io()->section('10. Installation de aropixel/page-bundle');
@@ -372,9 +372,7 @@ function aropixel_new_admin(
     ]);
 
     io()->section('Redémarrage des conteneurs');
-    run('castor stop', context: \Castor\context()->withWorkingDirectory($projectDir));
-    run('castor build', context: \Castor\context()->withWorkingDirectory($projectDir));
-    run('castor up', context: \Castor\context()->withWorkingDirectory($projectDir));
+    run('castor stop && castor build && castor up', context: \Castor\context()->withWorkingDirectory($projectDir));
 
     io()->success(array_filter([
         sprintf('Le projet "%s" a été créé.', $name),
