@@ -1,4 +1,15 @@
 when@dev:
+    liip_imagine:
+        resolvers:
+            default:
+                web_path:
+                    web_root: "%kernel.project_dir%/public"
+                    cache_prefix: "media/cache"
+        loaders:
+            default:
+                filesystem:
+                    data_root: "%kernel.project_dir%/private"
+
 when@test:
     liip_imagine:
         resolvers:

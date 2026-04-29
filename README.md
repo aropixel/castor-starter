@@ -47,10 +47,16 @@ echo "alias castor-starter='\"$(pwd)/vendor/bin/castor\" --castor-file=\"$(pwd)/
 ### Scaffold a new admin project
 
 ```bash
-castor-starter aropixel:new:admin <project-name>
+castor-starter aropixel:new:admin <project-name> [--with-page] [--with-blog] [--with-menu] [--all]
 ```
 
 Creates a complete Symfony admin project with Docker infrastructure, `aropixel/admin-bundle`, and Clever Cloud deployment config.
+
+**Options:**
+- `--with-page`: Install `aropixel/page-bundle`
+- `--with-blog`: Install `aropixel/blog-bundle`
+- `--with-menu`: Install `aropixel/menu-bundle`
+- `--all`: Install all additional bundles (Page, Blog, Menu)
 
 **Includes:**
 - Ready-to-use administration via `aropixel/admin-bundle` with a default administrator account
