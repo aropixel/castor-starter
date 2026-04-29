@@ -235,8 +235,13 @@ function aropixel_contrib_all(string $name): void
 }
 
 #[AsTask(name: 'aropixel:new:admin', description: 'Crée un projet Symfony admin Aropixel')]
-function aropixel_new_admin(string $name): void
-{
+function aropixel_new_admin(
+    string $name,
+    bool $page = false,
+    bool $blog = false,
+    bool $menu = false,
+    bool $all = false,
+): void {
     $root = getcwd();
     $projectDir = $root . '/' . $name;
 
@@ -341,8 +346,39 @@ function aropixel_new_admin(string $name): void
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
 
-    io()->success([
+    $installPage = $all || $page;
+    $installBlog = $all || $blog;
+    $installMenu = $all || $menu;
+
+    if ($installPage) {
+        io()->section('10. Installation de aropixel/page-bundle');
+        installNewBundle($projectDir, 'page-bundle', 'aropixel/page-bundle');
+    }
+
+    if ($installBlog) {
+        io()->section('11. Installation de aropixel/blog-bundle');
+        installNewBundle($projectDir, 'blog-bundle', 'aropixel/blog-bundle');
+    }
+
+    if ($installMenu) {
+        io()->section('12. Installation de aropixel/menu-bundle');
+        installNewBundle($projectDir, 'menu-bundle', 'aropixel/menu-bundle');
+    }
+
+    $bundlesInstalled = array_filter([
+        $installPage ? 'page-bundle' : null,
+        $installBlog ? 'blog-bundle' : null,
+        $installMenu ? 'menu-bundle' : null,
+    ]);
+
+    io()->section('Redémarrage des conteneurs');
+    run('castor stop', context: \Castor\context()->withWorkingDirectory($projectDir));
+    run('castor build', context: \Castor\context()->withWorkingDirectory($projectDir));
+    run('castor up', context: \Castor\context()->withWorkingDirectory($projectDir));
+
+    io()->success(array_filter([
         sprintf('Le projet "%s" a été créé.', $name),
         sprintf('Lien vers l\'admin : https://%s/%s', $domain, $adminSlug),
-    ]);
+        $bundlesInstalled ? 'Bundles supplémentaires installés : ' . implode(', ', $bundlesInstalled) : null,
+    ]));
 }

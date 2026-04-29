@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use function Castor\io;
+use function Castor\run;
+
 function customizeDockerStarterCastorFile(string $projectDir, string $projectName, string $domain, string $phpVersion): void
 {
     $file = $projectDir . '/castor.php';
@@ -496,4 +499,46 @@ XML;
     }
 
     file_put_contents($phpunitFile, $content);
+}
+
+/**
+ * Installe un bundle Aropixel (blog/page/menu) dans un nouveau projet (sans fork/clone).
+ * Utilisé par les options --blog, --page, --menu de aropixel:new:admin.
+ */
+function installNewBundle(string $projectDir, string $bundleName, string $packageName): void
+{
+    $root = dirname(__DIR__);
+
+    io()->section(sprintf('Copie du fichier de routes pour %s', $bundleName));
+    $routeFile = sprintf('aropixel_%s.yaml', explode('-', $bundleName)[0] ?? '');
+    $source = $root . '/resources/application/config/routes/' . $routeFile;
+
+    if (file_exists($source)) {
+        $targetDir = $projectDir . '/application/config/routes';
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+        $content = file_get_contents($source);
+        $adminSlug = readAdminSlug($projectDir);
+        if ('' !== $adminSlug) {
+            $content = str_replace('__ADMIN_SLUG__', $adminSlug, $content);
+        }
+        file_put_contents($targetDir . '/' . $routeFile, $content);
+    }
+
+    io()->section(sprintf('Installation de %s', $packageName));
+    run(
+        sprintf('castor builder composer require %s:dev-main', escapeshellarg($packageName)),
+        context: \Castor\context()->withWorkingDirectory($projectDir)
+    );
+
+    io()->section(sprintf('Migration de la base de données pour %s', $packageName));
+    run(
+        'castor builder php bin/console doctrine:migration:diff -n',
+        context: \Castor\context()->withWorkingDirectory($projectDir)
+    );
+    run(
+        'castor builder php bin/console doctrine:migration:migrate -n --allow-no-migration',
+        context: \Castor\context()->withWorkingDirectory($projectDir)
+    );
 }
