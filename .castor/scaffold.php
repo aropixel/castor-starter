@@ -280,37 +280,42 @@ function customizeDockerfile(string $projectDir): void
         throw new RuntimeException('Lecture impossible du Dockerfile.');
     }
 
-    $pattern = '/"php\$\{PHP_VERSION\}-apcu"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-bcmath"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-cli"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-common"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-curl"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-iconv"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-intl"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-mbstring"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-pgsql"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-uuid"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-xml"\s+\\\\\s+'
-        . '"php\$\{PHP_VERSION\}-zip"/';
+    $modulesToAdd    = ['gd', 'imagick', 'mysql', 'redis'];
+    $modulesToRemove = [];
 
-    $newModules = '"php${PHP_VERSION}-apcu" \\' . "\n"
-        . '        "php${PHP_VERSION}-bcmath" \\' . "\n"
-        . '        "php${PHP_VERSION}-cli" \\' . "\n"
-        . '        "php${PHP_VERSION}-common" \\' . "\n"
-        . '        "php${PHP_VERSION}-curl" \\' . "\n"
-        . '        "php${PHP_VERSION}-gd" \\' . "\n"
-        . '        "php${PHP_VERSION}-iconv" \\' . "\n"
-        . '        "php${PHP_VERSION}-imagick" \\' . "\n"
-        . '        "php${PHP_VERSION}-intl" \\' . "\n"
-        . '        "php${PHP_VERSION}-mbstring" \\' . "\n"
-        . '        "php${PHP_VERSION}-mysql" \\' . "\n"
-        . '        "php${PHP_VERSION}-pgsql" \\' . "\n"
-        . '        "php${PHP_VERSION}-redis" \\' . "\n"
-        . '        "php${PHP_VERSION}-uuid" \\' . "\n"
-        . '        "php${PHP_VERSION}-xml" \\' . "\n"
-        . '        "php${PHP_VERSION}-zip"';
+    // Detect the block of consecutive php${PHP_VERSION}-* package lines
+    $pattern = '/(?:[ \t]*"php\$\{PHP_VERSION\}-\w+"[ \t]*\\\\?\n)+/';
 
-    $content = preg_replace($pattern, $newModules, $content);
+    if (!preg_match($pattern, $content, $matches, PREG_OFFSET_CAPTURE)) {
+        throw new RuntimeException('Impossible de trouver la liste des modules PHP dans le Dockerfile.');
+    }
+
+    $block  = $matches[0][0];
+    $offset = (int) $matches[0][1];
+
+    // Extract indentation and current module names
+    preg_match_all('/([ \t]*)"php\$\{PHP_VERSION\}-(\w+)"/', $block, $lineMatches);
+    $indent  = $lineMatches[1][0] ?? '        ';
+    $modules = $lineMatches[2];
+
+    foreach ($modulesToAdd as $module) {
+        if (!in_array($module, $modules, true)) {
+            $modules[] = $module;
+        }
+    }
+
+    $modules = array_values(array_filter($modules, fn ($m) => !in_array($m, $modulesToRemove, true)));
+    sort($modules);
+
+    $lastLineHasBackslash = (bool) preg_match('/\\\\\s*\n$/', $block);
+    $lastIndex            = count($modules) - 1;
+    $newBlock             = '';
+    foreach ($modules as $i => $module) {
+        $newBlock .= $indent . '"php${PHP_VERSION}-' . $module . '"';
+        $newBlock .= ($i < $lastIndex || $lastLineHasBackslash) ? " \\\n" : "\n";
+    }
+
+    $content = substr_replace($content, $newBlock, $offset, strlen($block));
 
     file_put_contents($dockerfile, $content);
 }
