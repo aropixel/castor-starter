@@ -416,7 +416,7 @@ function addFixturesBundle(string $contribDir): void
 function requireTestDependencies(string $contribDir): void
 {
     \Castor\run(
-        'castor builder composer require --dev doctrine/doctrine-fixtures-bundle:^4.0 symfony/browser-kit:^7.0 symfony/css-selector:^7.0 dama/doctrine-test-bundle:^8.0',
+        'castor builder -- composer require --dev doctrine/doctrine-fixtures-bundle:^4.0 symfony/browser-kit:^7.0 symfony/css-selector:^7.0 dama/doctrine-test-bundle:^8.0',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
 }
@@ -452,7 +452,7 @@ function configureAutoloadDevBundleTests(string $contribDir): void
     );
 
     \Castor\run(
-        'castor builder composer dump-autoload',
+        'castor builder -- composer dump-autoload',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
 }
@@ -528,17 +528,17 @@ function installNewBundle(string $projectDir, string $bundleName, string $packag
 
     io()->section(sprintf('Installation de %s', $packageName));
     run(
-        sprintf('castor builder composer require %s:dev-main', escapeshellarg($packageName)),
+        sprintf('castor builder -- composer require %s:dev-main', escapeshellarg($packageName)),
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
 
     io()->section(sprintf('Migration de la base de données pour %s', $packageName));
     run(
-        'castor builder php bin/console doctrine:migration:diff -n',
+        'castor builder -- php bin/console doctrine:migration:diff -n',
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
     run(
-        'castor builder php bin/console doctrine:migration:migrate -n --allow-no-migration',
+        'castor builder -- php bin/console doctrine:migration:migrate -n --allow-no-migration',
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
 }

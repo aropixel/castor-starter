@@ -81,7 +81,7 @@ function aropixel_contrib_admin(string $name): void
 
     io()->section('7. Installation de Symfony');
     run('castor symfony --web-app', context: \Castor\context()->withWorkingDirectory($contribDir));
-    run('castor builder composer remove symfony/ux-turbo', context: \Castor\context()->withWorkingDirectory($contribDir));
+    run('castor builder -- composer remove symfony/ux-turbo', context: \Castor\context()->withWorkingDirectory($contribDir));
 
     io()->section('8. Démarrage des conteneurs');
     run('castor start', context: \Castor\context()->withWorkingDirectory($contribDir));
@@ -99,34 +99,34 @@ function aropixel_contrib_admin(string $name): void
     io()->section('11. Installation du bundle en path repository');
     addMissingBundles($contribDir);
     run(
-        'castor builder composer require aropixel/admin-bundle:*@dev',
+        'castor builder -- composer require aropixel/admin-bundle:*@dev',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
     run(
-        'castor builder php bin/console assets:install --relative',
+        'castor builder -- php bin/console assets:install --relative',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
     addAdminBundleImportmap($contribDir);
 
     io()->section('12. Création de la base de données');
     run(
-        'castor builder php bin/console doctrine:database:drop --force --if-exists',
+        'castor builder -- php bin/console doctrine:database:drop --force --if-exists',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
     run(
-        'castor builder php bin/console doctrine:database:create',
+        'castor builder -- php bin/console doctrine:database:create',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
     run(
-        'castor builder php bin/console doctrine:migration:diff -n',
+        'castor builder -- php bin/console doctrine:migration:diff -n',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
     run(
-        'castor builder php bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing',
+        'castor builder -- php bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
     run(
-        'castor builder php bin/console aropixel:admin:create-user --no-interaction',
+        'castor builder -- php bin/console aropixel:admin:create-user --no-interaction',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
 
@@ -135,7 +135,7 @@ function aropixel_contrib_admin(string $name): void
         sprintf('Bundle : %s/admin-bundle/%s', $name, $branchName ? '(branche : ' . $branchName . ')' : ''),
         '',
         'Commandes utiles :',
-        sprintf('  cd %s && castor builder composer ...', $name),
+        sprintf('  cd %s && castor builder -- composer ...', $name),
         sprintf('  cd %s/admin-bundle && git push origin %s', $name, $branchName ?: 'main'),
     ]));
 }
@@ -205,17 +205,17 @@ function aropixel_contrib_all(string $name): void
 
     io()->section('Migration pour l\'entité Project');
     run(
-        'castor builder php bin/console doctrine:migration:diff -n',
+        'castor builder -- php bin/console doctrine:migration:diff -n',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
     run(
-        'castor builder php bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing',
+        'castor builder -- php bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
 
     io()->section('Chargement des fixtures');
     run(
-        'castor builder php bin/console doctrine:fixtures:load -n',
+        'castor builder -- php bin/console doctrine:fixtures:load -n',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
 
@@ -230,7 +230,7 @@ function aropixel_contrib_all(string $name): void
         'Bundles installés : admin-bundle, blog-bundle, page-bundle, menu-bundle',
         '',
         'Comptes de test : admin@example.com / admin  —  superadmin@example.com / admin',
-        'Lancer les tests : castor builder bin/phpunit',
+        'Lancer les tests : castor builder -- bin/phpunit',
     ]);
 }
 
@@ -295,7 +295,7 @@ function aropixel_new_admin(
 
     io()->section('3. Installation de Symfony');
     run('castor symfony --web-app', context: \Castor\context()->withWorkingDirectory($projectDir));
-    run('castor builder composer remove symfony/ux-turbo', context: \Castor\context()->withWorkingDirectory($projectDir));
+    run('castor builder -- composer remove symfony/ux-turbo', context: \Castor\context()->withWorkingDirectory($projectDir));
 
     io()->section('4. Initialisation du starter');
     run('castor start', context: \Castor\context()->withWorkingDirectory($projectDir));
@@ -303,12 +303,12 @@ function aropixel_new_admin(
     io()->section('5. Installation du bundle admin Aropixel');
     addMissingBundles($projectDir);
     run(
-        'castor builder composer require aropixel/admin-bundle:dev-main',
+        'castor builder -- composer require aropixel/admin-bundle:dev-main',
         context: \Castor\context()
             ->withWorkingDirectory($projectDir)
     );
     run(
-        'castor builder php bin/console assets:install --relative',
+        'castor builder -- php bin/console assets:install --relative',
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
     addAdminBundleImportmap($projectDir);
@@ -326,23 +326,23 @@ function aropixel_new_admin(
 
     io()->section('9. Création de l\'administrateur');
     run(
-        'castor builder php bin/console doctrine:database:drop --force --if-exists',
+        'castor builder -- php bin/console doctrine:database:drop --force --if-exists',
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
     run(
-        'castor builder php bin/console doctrine:database:create',
+        'castor builder -- php bin/console doctrine:database:create',
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
     run(
-        'castor builder php bin/console doctrine:migration:diff -n',
+        'castor builder -- php bin/console doctrine:migration:diff -n',
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
     run(
-        'castor builder php bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing',
+        'castor builder -- php bin/console doctrine:migration:migrate -n --allow-no-migration --all-or-nothing',
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
     run(
-        'castor builder php bin/console aropixel:admin:create-user --no-interaction',
+        'castor builder -- php bin/console aropixel:admin:create-user --no-interaction',
         context: \Castor\context()->withWorkingDirectory($projectDir)
     );
 

@@ -214,17 +214,17 @@ function installContribBundle(string $name, string $bundleName, string $packageN
 
     io()->section(sprintf('Installation de %s', $packageName));
     run(
-        sprintf('castor builder composer require %s:*@dev', escapeshellarg($packageName)),
+        sprintf('castor builder -- composer require %s:*@dev', escapeshellarg($packageName)),
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
 
     io()->section(sprintf('Migration de la base de données pour %s', $packageName));
     run(
-        'castor builder php bin/console doctrine:migration:diff -n',
+        'castor builder -- php bin/console doctrine:migration:diff -n',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
     run(
-        'castor builder php bin/console doctrine:migration:migrate -n --allow-no-migration',
+        'castor builder -- php bin/console doctrine:migration:migrate -n --allow-no-migration',
         context: \Castor\context()->withWorkingDirectory($contribDir)
     );
 
